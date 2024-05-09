@@ -1,41 +1,62 @@
-class NQueensProblem:
-    def _init_(self, n):
-        self.queens = [0] * n
-        self.numSolutions = 0
-    def solve(self):
-        self.solve_helper(0)
-    def solve_helper(self, row):
-        if row == len(self.queens):
-            self.numSolutions += 1
-            self.print_solution()
-        else:
-            for col in range(len(self.queens)):
-                self.queens[row] = col
-                if self.is_valid(row, col):
-                    self.solve_helper(row + 1)
-    def is_valid(self, row, col):
+class NQueens:
+    def __init__(self, n):
+        self.n = n
+        self.board = [[0] * n for _ in range(n)]
+        self.solutions = []
+
+    def is_safe(self, row, col):
+        # Check if there's a queen in the same column
         for i in range(row):
-            diff = abs(self.queens[i] - col)
-            if diff == 0 or diff == row - i:
+            if self.board[i][col] == 1:
                 return False
+
+        # Check upper left diagonal
+        for i, j in zip(range(row, -1, -1), range(col, -1, -1)):
+            if self.board[i][j] == 1:
+                return False
+
+        # Check upper right diagonal
+        for i, j in zip(range(row, -1, -1), range(col, self.n)):
+            if self.board[i][j] == 1:
+                return False
+
         return True
-    def print_solution(self):
-        if self.numSolutions == 1:
-            print("Solution: ", end="")
-            for i in range(len(self.queens)):
-                print(self.queens[i], end=" ")
+
+    def solve_n_queens(self, row):
+        if row == self.n:
+            # Convert board to a printable solution
+            solution = [''.join('Q' if cell == 1 else '.' for cell in row) for row in self.board]
+            self.solutions.append(solution)
+            return True
+
+        for col in range(self.n):
+            if self.is_safe(row, col):
+                self.board[row][col] = 1
+                if self.solve_n_queens(row + 1):
+                    self.board[row][col] = 0  # backtrack
+                else:
+                    self.board[row][col] = 0
+
+        return False
+
+    def find_solutions(self):
+        self.solve_n_queens(0)
+        return self.solutions
+
+def main():
+    n = int(input("Enter the size of the chessboard (n x n): "))
+    n_queens = NQueens(n)
+    solutions = n_queens.find_solutions()
+
+    if solutions:
+        print(f"Found {len(solutions)} solutions for {n}-queens problem:")
+        for idx, solution in enumerate(solutions, start=1):
+            print(f"Solution {idx}:")
+            for row in solution:
+                print(row)
             print()
-            print("The Matrix Representation:")
-            arr = [[0] * len(self.queens) for _ in range(len(self.queens))]
-            for i in range(len(self.queens)):
-                for j in range(len(self.queens)):
-                    if j == self.queens[i]:
-                        arr[i][j] = 1
-            for i in range(len(self.queens)):
-                for j in range(len(self.queens)):
-                    print(arr[i][j], end=" ")
-                print()
-if _name_ == "_main_":
-    n = int(input("Enter N Queens Problem: "))
-    NQueensProblem = NQueensProblem(n)
-    NQueensProblem.solve()
+    else:
+        print("No solutions found for the n-queens problem.")
+
+if __name__ == "__main__":
+    main()
